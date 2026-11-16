@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Studio — Offline PDF Editor</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Primary Top Toolbar -->
+    <header class="toolbar">
+      <div class="toolbar-brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <path d="M9 15h6"></path>
+          <path d="M9 11h6"></path>
+        </svg>
+        <span class="brand-title">PDF Studio</span>
+        <span class="badge-offline">OFFLINE</span>
+      </div>
+
+      <div class="toolbar-actions">
+        <button id="btn-upload" class="btn btn-secondary" title="Open PDF file(s)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <span>Upload</span>
+        </button>
+
+        <button id="btn-merge" class="btn btn-secondary" disabled title="Append PDFs to current document">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 6h13"></path>
+            <path d="M8 12h13"></path>
+            <path d="M8 18h13"></path>
+            <path d="M3 6h.01"></path>
+            <path d="M3 12h.01"></path>
+            <path d="M3 18h.01"></path>
+          </svg>
+          <span>Merge PDFs</span>
+        </button>
+
+        <button id="btn-reorder" class="btn btn-secondary" disabled title="Drag thumbnails in the sidebar to reorder">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="5 9 2 12 5 15"></polyline>
+            <polyline points="9 5 12 2 15 5"></polyline>
+            <polyline points="15 19 12 22 9 19"></polyline>
+            <polyline points="19 9 22 12 19 15"></polyline>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="12" y1="2" x2="12" y2="22"></line>
+          </svg>
+          <span>Reorder</span>
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <button id="btn-clear" class="btn btn-danger" disabled title="Clear workspace and start over">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Clear</span>
+        </button>
+
+        <button id="btn-save" class="btn btn-primary" disabled title="Export arranged PDF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Save PDF</span>
+        </button>
+      </div>
+
+      <input type="file" id="input-upload" accept="application/pdf,.pdf" multiple hidden />
+      <input type="file" id="input-merge" accept="application/pdf,.pdf" multiple hidden />
+    </header>
+
+    <!-- Secondary Organise Toolbar -->
+    <div id="organise-bar" class="organise-bar">
+      <div class="organise-group">
+        <button id="btn-select-all" class="btn btn-xs btn-secondary" disabled title="Select or Deselect all pages">
+          <span id="select-all-label">Select All</span>
+        </button>
+        <span id="selection-count-badge" class="selection-badge">0 selected</span>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Rotate -->
+      <div class="organise-group">
+        <button id="btn-rotate-left" class="btn btn-xs btn-secondary" disabled title="Rotate selected pages 270° (90° Counter-Clockwise)">
+          ↺ 270°
+        </button>
+        <button id="btn-rotate-right" class="btn btn-xs btn-secondary" disabled title="Rotate selected pages 90° Clockwise">
+          ↻ 90°
+        </button>
+        <button id="btn-rotate-180" class="btn btn-xs btn-secondary" disabled title="Rotate selected pages 180°">
+          ⇅ 180°
+        </button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Page Manipulation -->
+      <div class="organise-group">
+        <button id="btn-duplicate" class="btn btn-xs btn-secondary" disabled title="Duplicate selected pages">
+          Duplicate
+        </button>
+        <button id="btn-insert-blank" class="btn btn-xs btn-secondary" disabled title="Insert a blank page">
+          + Blank Page
+        </button>
+        <button id="btn-crop" class="btn btn-xs btn-secondary" disabled title="Crop selected pages">
+          Crop
+        </button>
+        <button id="btn-delete" class="btn btn-xs btn-danger" disabled title="Delete selected pages">
+          Delete
+        </button>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- Extract & Split -->
+      <div class="organise-group">
+        <button id="btn-extract" class="btn btn-xs btn-secondary" disabled title="Extract selected pages as a separate PDF">
+          Extract Selected
+        </button>
+        <button id="btn-split" class="btn btn-xs btn-secondary" disabled title="Split PDF into separate files">
+          Split PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Left Sidebar: Thumbnails -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">PAGES</span>
+          <span id="page-count-badge" class="page-count-badge">0 pages</span>
+        </div>
+        <div id="thumbnail-list" class="thumbnail-list">
+          <div class="sidebar-empty-hint">No pages loaded</div>
+        </div>
+      </aside>
+
+      <!-- Central PDF Preview Area -->
+      <section id="preview-area" class="preview-area">
+        <!-- Empty Dropzone State -->
+        <div id="empty-state" class="empty-state">
+          <div class="dropzone-card" id="dropzone">
+            <div class="dropzone-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <polyline points="9 15 12 12 15 15"></polyline>
+              </svg>
+            </div>
+            <h2>Open PDF Documents</h2>
+            <p>Select one or multiple PDF files from your computer, or drag and drop them here.</p>
+            <button id="btn-empty-upload" class="btn btn-primary btn-lg">Select PDF Files</button>
+            <span class="privacy-note">100% Local Processing • Files never leave your device</span>
+          </div>
+        </div>
+
+        <!-- Active Canvas Container -->
+        <div id="canvas-wrapper" class="canvas-wrapper hidden">
+          <div class="preview-status-bar">
+            <span id="preview-page-info">Page 1 of 1</span>
+            <span id="preview-meta-tags" class="meta-tags-row">
+              <span id="preview-rotation-tag" class="source-tag hidden">0°</span>
+              <span id="preview-crop-tag" class="source-tag hidden">Cropped</span>
+              <span id="preview-source-info" class="source-tag">document.pdf</span>
+            </span>
+          </div>
+          <div class="canvas-scroll-container">
+            <div class="canvas-stage" id="canvas-stage">
+              <canvas id="main-pdf-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL 1: Split PDF -->
+    <div id="modal-split" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Split PDF Document</h3>
+          <button class="modal-close" data-close-modal="modal-split">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Choose how you want to split the current <strong id="split-total-pages">0</strong>-page document into separate PDF files:</p>
+
+          <label class="radio-option">
+            <input type="radio" name="split-mode" value="ranges" checked />
+            <div>
+              <strong>Split by Page Ranges</strong>
+              <span>Enter comma-separated ranges (e.g., <code>1-3, 4-5, 6</code>)</span>
+            </div>
+          </label>
+
+          <div id="split-ranges-box" class="form-group">
+            <input type="text" id="input-split-ranges" class="text-input" placeholder="e.g., 1-2, 3-5" />
+            <small class="form-hint">Each range downloads as its own PDF file.</small>
+          </div>
+
+          <label class="radio-option">
+            <input type="radio" name="split-mode" value="all" />
+            <div>
+              <strong>Split Every Page</strong>
+              <span>Export every single page as an individual PDF file</span>
+            </div>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-close-modal="modal-split">Cancel</button>
+          <button id="btn-confirm-split" class="btn btn-primary">Split & Download</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2: Insert Blank Page -->
+    <div id="modal-blank" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Insert Blank Page</h3>
+          <button class="modal-close" data-close-modal="modal-blank">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="select-blank-position">Insert Position</label>
+            <select id="select-blank-position" class="text-input">
+              <option value="after">After current page</option>
+              <option value="before">Before current page</option>
+              <option value="start">At the beginning (Page 1)</option>
+              <option value="end">At the end of document</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="select-blank-size">Page Size</label>
+            <select id="select-blank-size" class="text-input">
+              <option value="match">Match Current Page Size</option>
+              <option value="letter">US Letter (8.5 × 11 in)</option>
+              <option value="a4">A4 (210 × 297 mm)</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-close-modal="modal-blank">Cancel</button>
+          <button id="btn-confirm-blank" class="btn btn-primary">Insert Page</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 3: Crop Pages -->
+    <div id="modal-crop" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Crop Pages</h3>
+          <button class="modal-close" data-close-modal="modal-crop">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-desc">Set percentage margins to trim from each edge of the selected page(s) (<strong id="crop-target-count">1 page</strong>):</p>
+          <div class="crop-grid">
+            <div class="form-group">
+              <label for="crop-top">Top Margin (%)</label>
+              <input type="number" id="crop-top" class="text-input" min="0" max="45" value="0" />
+            </div>
+            <div class="form-group">
+              <label for="crop-bottom">Bottom Margin (%)</label>
+              <input type="number" id="crop-bottom" class="text-input" min="0" max="45" value="0" />
+            </div>
+            <div class="form-group">
+              <label for="crop-left">Left Margin (%)</label>
+              <input type="number" id="crop-left" class="text-input" min="0" max="45" value="0" />
+            </div>
+            <div class="form-group">
+              <label for="crop-right">Right Margin (%)</label>
+              <input type="number" id="crop-right" class="text-input" min="0" max="45" value="0" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-reset-crop" class="btn btn-secondary" style="margin-right: auto;">Reset Crop</button>
+          <button class="btn btn-secondary" data-close-modal="modal-crop">Cancel</button>
+          <button id="btn-confirm-crop" class="btn btn-primary">Apply Crop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+      <div class="spinner"></div>
+      <p id="loading-text">Processing PDF locally...</p>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
